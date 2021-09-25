@@ -1,0 +1,87 @@
+@import '~bootstrap/dist/css/bootstrap.min.css';
+
+.player-chat {
+    height: 137px;
+    background-color: rgba(0, 0, 0, 0.8);
+    overflow-y: hidden;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    font-size: 0.875rem;
+}
+
+.player-chat__name {
+    color: #558f7b;
+}
+
+.map {
+    position: relative;
+}
+
+.map__img {
+    width: 100%;
+    height: auto;
+}
+
+.map__radio {
+    margin-right: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px 0 #000;
+    padding: 0.5rem;
+}
+
+.map__list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.map__section {
+    width: 64px;
+    height: 64px;
+    position: absolute;
+    z-index: 10;
+}
+
+.map__btn {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0;
+    left: 0;
+    z-index: 30;
+}
+
+.map__details {
+    position: absolute;
+    bottom: 3.5rem;
+    left: 0.5rem;
+    height: 105px;
+    overflow-y: hidden;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    font-size: 0.875rem;
+}
+.map__details__name {
+    color: #558f7b;
+}
+
+.map__results {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+
+.map__oracle {
+    visibility: visible;
+    opacity: 1;
+    transition: visibility 0.2s ease, opacity 0.2s ease;
+    z-index: 10;
+}
+.map__oracle--vanish {
+    visibility: hidden;
+    opacity: 0;
+}
