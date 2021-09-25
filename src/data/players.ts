@@ -74,7 +74,7 @@ export const players: Player[] = [
         hasMic: true,
     },
     {
-        name: 'QueenB#0138',
+        name: 'Octagun#0138',
         hasMic: false,
     },
     {
