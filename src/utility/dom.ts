@@ -46,6 +46,7 @@ export const showPlayerNames = (players: Player[]): void => {
 export const playSound = (name: string): Promise<void> => {
     return new Promise((resolve) => {
         const elem = document.createElement('audio');
+        elem.volume = 0.8;
         elem.preload = 'auto';
         elem.src = soundMap[name];
         document.body.appendChild(elem);
@@ -62,7 +63,7 @@ export const appendDetails = (playerName: string, action: string) => {
     const elem = qs('.map__details');
     const text = document.createElement('div');
     if (playerName) {
-        text.innerHTML = `<span class="map__details__name">${playerName}</span> ${action}`;
+        text.innerHTML = `<span class="text-d2-fireteam">${playerName}</span> ${action}`;
     } else {
         text.innerHTML = action;
     }
@@ -77,7 +78,7 @@ export const resetDetails = () => {
 export const appendChat = (playerName: string, action: string) => {
     const elem = qs('.player-chat');
     const text = document.createElement('div');
-    text.innerHTML = `<span class="player-chat__name">${playerName}:</span> ${action}`;
+    text.innerHTML = `<span class="text-d2-fireteam">${playerName}:</span> ${action}`;
     elem.appendChild(text);
 };
 

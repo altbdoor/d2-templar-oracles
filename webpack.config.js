@@ -7,7 +7,10 @@ const PurgecssPlugin = require('purgecss-webpack-plugin')
 
 // @ts-check
 module.exports = /** @type { import('webpack').Configuration } */ {
-    entry: './src/main.ts',
+    entry: {
+        main: './src/main.ts',
+        about: './src/about.ts',
+    },
     module: {
         rules: [
             {
@@ -55,6 +58,12 @@ module.exports = /** @type { import('webpack').Configuration } */ {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/index.html',
+            chunks: ['main'],
+        }),
+        new HtmlWebpackPlugin({
+            filename: 'about.html',
+            template: './src/about.html',
+            chunks: ['about'],
         }),
         new MiniCssExtractPlugin({
             filename: '[name]-[contenthash].css',

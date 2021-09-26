@@ -1,16 +1,18 @@
 @import '~bootstrap/dist/css/bootstrap.min.css';
 
+.text-d2-fireteam {
+    color: #558f7b;
+}
+
+/* ======================================== */
+
 .player-chat {
     height: 137px;
     background-color: rgba(0, 0, 0, 0.8);
     overflow-y: hidden;
-    color: #fff;
+    color: var(--bs-white);
     text-shadow: 1px 1px 1px #000;
-    font-size: 0.875rem;
-}
-
-.player-chat__name {
-    color: #558f7b;
+    font-size: 0.875rem
 }
 
 .map {
@@ -22,11 +24,32 @@
     height: auto;
 }
 
-.map__radio {
-    margin-right: 0;
+.map__radio__text {
+    display: block;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 5px 0 #000;
-    padding: 0.5rem;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    border-radius: 50%;
+    position: relative;
+}
+.map__radio > input:checked + .map__radio__text {
+    background-color: var(--bs-red);
+    color: var(--bs-white);
+}
+.map__radio > input:checked + .map__radio__text:before {
+    content: "You are here!";
+    position: absolute;
+    top: -2.5rem;
+    left: 0;
+    background-color: var(--bs-red);
+    text-align: center;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    display: block;
+    white-space: nowrap;
+    font-weight: 400;
 }
 
 .map__list {
@@ -56,12 +79,9 @@
     left: 0.5rem;
     height: 105px;
     overflow-y: hidden;
-    color: #fff;
+    color: var(--bs-white);
     text-shadow: 1px 1px 1px #000;
-    font-size: 0.875rem;
-}
-.map__details__name {
-    color: #558f7b;
+    font-size: 0.875rem
 }
 
 .map__results {
@@ -72,7 +92,7 @@
     bottom: 0;
     z-index: 20;
     background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
+    color: var(--bs-white);
 }
 
 .map__oracle {
