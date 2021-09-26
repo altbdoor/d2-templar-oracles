@@ -16,161 +16,169 @@ import {
 } from './utility/dom';
 import { getMockPlayers, getOracles, getOraclesForMockPlayers, getRandomIntInclusive } from './utility/rand';
 
-const gameState: GameState = {
-    mockPlayers: getMockPlayers(),
-    mockPlayerOracles: [],
-    name: 'JohnDoe#1234',
-    selectedOracle: '',
-};
+if (qs('.map')) {
+    main();
+}
 
-showPlayerNames(gameState.mockPlayers.slice(1));
+function main() {
+    const gameState: GameState = {
+        mockPlayers: getMockPlayers(),
+        mockPlayerOracles: [],
+        name: 'JohnDoe#1234',
+        selectedOracle: '',
+    };
 
-qs('.map__btn__start').onclick = () => {
-    const playerName = qs<HTMLInputElement>('.player-list__name');
-    gameState.name = playerName.value;
-    playerName.disabled = true;
+    showPlayerNames(gameState.mockPlayers.slice(1));
 
-    gameState.selectedOracle = qs<HTMLInputElement>('.map__radio > [name="oracles"]:checked').value;
-    gameState.mockPlayerOracles = getOraclesForMockPlayers(gameState.selectedOracle);
+    qs('.map__btn__start').onclick = () => {
+        const playerName = qs<HTMLInputElement>('.player-list__name');
+        gameState.name = playerName.value;
+        playerName.disabled = true;
 
-    qs('.map__btn__start').classList.add('d-none');
+        gameState.selectedOracle = qs<HTMLInputElement>('.map__radio > [name="oracles"]:checked').value;
+        gameState.mockPlayerOracles = getOraclesForMockPlayers(gameState.selectedOracle);
 
-    qsa('.map__radio').forEach((elem) => {
-        elem.classList.add('d-none');
-    });
+        qs('.map__btn__start').classList.add('d-none');
 
-    qsa('.map__oracle').forEach((elem) => {
-        elem.classList.remove('d-none');
-        elem.classList.add('map__oracle--vanish');
-    });
+        qsa('.map__radio').forEach((elem) => {
+            elem.classList.add('d-none');
+        });
 
-    const maxIteration = 5;
+        qsa('.map__oracle').forEach((elem) => {
+            elem.classList.remove('d-none');
+            elem.classList.add('map__oracle--vanish');
+        });
 
-    from(playSound('darkness'))
-        .pipe(
-            map(() => getOracles(maxIteration)),
-            concatAll(),
-            concatMap((oracles) => {
-                appendDetails('', 'The Oracles prepare to sing their refrain');
+        const maxIteration = 5;
 
-                return concat(
-                    from(oracles).pipe(
-                        concatMap((oracle, index) => {
-                            if (oracle !== gameState.selectedOracle) {
-                                const mockPlayer = gameState.mockPlayers[gameState.mockPlayerOracles.indexOf(oracle)];
-                                appendChat(mockPlayer.name, `i got ${index + 1}`);
-                            }
+        from(playSound('darkness'))
+            .pipe(
+                map(() => getOracles(maxIteration)),
+                concatAll(),
+                concatMap((oracles) => {
+                    appendDetails('', 'The Oracles prepare to sing their refrain');
 
-                            qs(`.map__oracle--${oracle}`).classList.remove('map__oracle--vanish');
-                            return from(playSound(oracle)).pipe(mapTo(oracle));
-                        }),
-                        toArray(),
-                        tap(() => {
-                            qsa('.map__oracle').forEach((elem) => elem.classList.add('map__oracle--vanish'));
-                        }),
-                        delay(1400),
-                        repeat(2),
-                        last(),
-                        tap(() => {
-                            qs('.map__btn__shoot').classList.remove('d-none');
-                            oracles
-                                .map((oracle) => qs(`.map__oracle--${oracle}`))
-                                .forEach((elem) => elem.classList.remove('map__oracle--vanish'));
-
-                            playSound('ready');
-                            appendDetails('', 'The Templar summons the Oracles');
-                        })
-                    ),
-                    from(oracles).pipe(
-                        concatMap((oracle, index) => {
-                            const isSelectedOracle = oracle === gameState.selectedOracle;
-                            const isPlayerInvolved = oracles.includes(gameState.selectedOracle);
-                            const isPlayerPassed = oracles.indexOf(gameState.selectedOracle) < oracles.indexOf(oracle);
-
-                            const nonPlayerEvent = defer(() => {
-                                if (isSelectedOracle) {
-                                    return timer(6000).pipe(switchMap(() => throwError('PLAYER_SHOT_LATE')));
+                    return concat(
+                        from(oracles).pipe(
+                            concatMap((oracle, index) => {
+                                if (oracle !== gameState.selectedOracle) {
+                                    const mockPlayer =
+                                        gameState.mockPlayers[gameState.mockPlayerOracles.indexOf(oracle)];
+                                    appendChat(mockPlayer.name, `i got ${index + 1}`);
                                 }
 
-                                return timer(getRandomIntInclusive(1000, 4000)).pipe(
-                                    tap(() => {
-                                        playSound('break');
-                                        const mockPlayer =
-                                            gameState.mockPlayers[gameState.mockPlayerOracles.indexOf(oracle)];
+                                qs(`.map__oracle--${oracle}`).classList.remove('map__oracle--vanish');
+                                return from(playSound(oracle)).pipe(mapTo(oracle));
+                            }),
+                            toArray(),
+                            tap(() => {
+                                qsa('.map__oracle').forEach((elem) => elem.classList.add('map__oracle--vanish'));
+                            }),
+                            delay(1400),
+                            repeat(2),
+                            last(),
+                            tap(() => {
+                                qs('.map__btn__shoot').classList.remove('d-none');
+                                oracles
+                                    .map((oracle) => qs(`.map__oracle--${oracle}`))
+                                    .forEach((elem) => elem.classList.remove('map__oracle--vanish'));
 
-                                        appendDetails(mockPlayer.name, 'has destroyed an Oracle');
-                                        appendChat(mockPlayer.name, `${index + 1} down`);
+                                playSound('ready');
+                                appendDetails('', 'The Templar summons the Oracles');
+                            })
+                        ),
+                        from(oracles).pipe(
+                            concatMap((oracle, index) => {
+                                const isSelectedOracle = oracle === gameState.selectedOracle;
+                                const isPlayerInvolved = oracles.includes(gameState.selectedOracle);
+                                const isPlayerPassed =
+                                    oracles.indexOf(gameState.selectedOracle) < oracles.indexOf(oracle);
 
-                                        qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
-                                    }),
-                                    mapTo('MOCK_SHOT_SUCCESS')
-                                );
-                            });
-
-                            const playerShootEvent = fromEvent(qs('.map__btn__shoot'), 'click').pipe(
-                                take(1),
-                                switchMap(() => {
+                                const nonPlayerEvent = defer(() => {
                                     if (isSelectedOracle) {
-                                        playSound('break');
-                                        appendDetails(gameState.name, 'has destroyed an Oracle');
-                                        qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
-                                        return of('PLAYER_SHOT_SUCCESS');
+                                        return timer(6000).pipe(switchMap(() => throwError('PLAYER_SHOT_LATE')));
                                     }
 
-                                    if (isPlayerInvolved && !isPlayerPassed) {
-                                        playSound('break');
-                                        appendDetails(gameState.name, 'has destroyed an Oracle');
-                                        qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
-                                        return throwError('PLAYER_SHOT_EARLY');
-                                    }
+                                    return timer(getRandomIntInclusive(1000, 4000)).pipe(
+                                        tap(() => {
+                                            playSound('break');
+                                            const mockPlayer =
+                                                gameState.mockPlayers[gameState.mockPlayerOracles.indexOf(oracle)];
 
-                                    return NEVER;
-                                })
-                            );
+                                            appendDetails(mockPlayer.name, 'has destroyed an Oracle');
+                                            appendChat(mockPlayer.name, `${index + 1} down`);
 
-                            return race(nonPlayerEvent, playerShootEvent);
+                                            qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
+                                        }),
+                                        mapTo('MOCK_SHOT_SUCCESS')
+                                    );
+                                });
+
+                                const playerShootEvent = fromEvent(qs('.map__btn__shoot'), 'click').pipe(
+                                    take(1),
+                                    switchMap(() => {
+                                        if (isSelectedOracle) {
+                                            playSound('break');
+                                            appendDetails(gameState.name, 'has destroyed an Oracle');
+                                            qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
+                                            return of('PLAYER_SHOT_SUCCESS');
+                                        }
+
+                                        if (isPlayerInvolved && !isPlayerPassed) {
+                                            playSound('break');
+                                            appendDetails(gameState.name, 'has destroyed an Oracle');
+                                            qs(`.map__oracle--${oracle}`).classList.add('map__oracle--vanish');
+                                            return throwError('PLAYER_SHOT_EARLY');
+                                        }
+
+                                        return NEVER;
+                                    })
+                                );
+
+                                return race(nonPlayerEvent, playerShootEvent);
+                            }),
+                            toArray()
+                        )
+                    ).pipe(
+                        toArray(),
+                        delay(1400),
+                        tap(() => {
+                            qs('.map__btn__shoot').classList.add('d-none');
+                            appendDetails('', 'The Oracles recognize their refrain');
                         }),
-                        toArray()
-                    )
-                ).pipe(
-                    toArray(),
-                    delay(1400),
-                    tap(() => {
-                        qs('.map__btn__shoot').classList.add('d-none');
-                        appendDetails('', 'The Oracles recognize their refrain');
-                    }),
-                    switchMap((data) => {
-                        const isLastRound = data[0].length === maxIteration + 2;
-                        return timer(isLastRound ? 0 : 6000).pipe(mapTo(data));
-                    })
-                );
-            }),
-            last()
-        )
-        .subscribe(
-            () => {
-                showResults('SUCCESS');
-            },
-            (err: string) => {
-                showResults(err);
-                qs('.map__btn__shoot').classList.add('d-none');
-            }
-        );
-};
+                        switchMap((data) => {
+                            const isLastRound = data[0].length === maxIteration + 2;
+                            return timer(isLastRound ? 0 : 6000).pipe(mapTo(data));
+                        })
+                    );
+                }),
+                last()
+            )
+            .subscribe(
+                () => {
+                    showResults('SUCCESS');
+                },
+                (err: string) => {
+                    showResults(err);
+                    qs('.map__btn__shoot').classList.add('d-none');
+                }
+            );
+    };
 
-qs('.map__results__retry').onclick = () => {
-    qs<HTMLInputElement>('.player-list__name').disabled = false;
-    qs('.map__btn__start').classList.remove('d-none');
+    qs('.map__results__retry').onclick = () => {
+        qs<HTMLInputElement>('.player-list__name').disabled = false;
+        qs('.map__btn__start').classList.remove('d-none');
 
-    qsa('.map__radio').forEach((elem) => {
-        elem.classList.remove('d-none');
-    });
+        qsa('.map__radio').forEach((elem) => {
+            elem.classList.remove('d-none');
+        });
 
-    qsa('.map__oracle').forEach((elem) => {
-        elem.classList.add('d-none');
-    });
+        qsa('.map__oracle').forEach((elem) => {
+            elem.classList.add('d-none');
+        });
 
-    hideResults();
-    resetDetails();
-    resetChat();
-};
+        hideResults();
+        resetDetails();
+        resetChat();
+    };
+}

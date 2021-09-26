@@ -12,7 +12,7 @@
     overflow-y: hidden;
     color: var(--bs-white);
     text-shadow: 1px 1px 1px #000;
-    font-size: 0.875rem
+    font-size: 0.875rem;
 }
 
 .map {
@@ -39,7 +39,7 @@
     color: var(--bs-white);
 }
 .map__radio > input:checked + .map__radio__text:before {
-    content: "You are here!";
+    content: 'You are here!';
     position: absolute;
     top: -2.5rem;
     left: 0;
@@ -81,7 +81,7 @@
     overflow-y: hidden;
     color: var(--bs-white);
     text-shadow: 1px 1px 1px #000;
-    font-size: 0.875rem
+    font-size: 0.875rem;
 }
 
 .map__results {

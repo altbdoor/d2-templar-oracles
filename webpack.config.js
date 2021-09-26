@@ -1,16 +1,13 @@
 const path = require('path');
-const glob = require('glob')
+const glob = require('glob');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const PurgecssPlugin = require('purgecss-webpack-plugin')
+const PurgecssPlugin = require('purgecss-webpack-plugin');
 
 // @ts-check
 module.exports = /** @type { import('webpack').Configuration } */ {
-    entry: {
-        main: './src/main.ts',
-        about: './src/about.ts',
-    },
+    entry: './src/main.ts',
     module: {
         rules: [
             {
@@ -58,12 +55,12 @@ module.exports = /** @type { import('webpack').Configuration } */ {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/index.html',
-            chunks: ['main'],
+            favicon: './src/assets/favicon.png',
         }),
         new HtmlWebpackPlugin({
             filename: 'about.html',
             template: './src/about.html',
-            chunks: ['about'],
+            favicon: './src/assets/favicon.png',
         }),
         new MiniCssExtractPlugin({
             filename: '[name]-[contenthash].css',
