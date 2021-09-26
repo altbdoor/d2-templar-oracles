@@ -1,23 +1,36 @@
+import darkness from '../assets/ambient/darkness.mp3';
+import oracleBreak from '../assets/oracles/break.mp3';
+import oracle1 from '../assets/oracles/oracle1.mp3';
+import oracle2 from '../assets/oracles/oracle2.mp3';
+import oracle3 from '../assets/oracles/oracle3.mp3';
+import oracle4 from '../assets/oracles/oracle4.mp3';
+import oracle5 from '../assets/oracles/oracle5.mp3';
+import oracle6 from '../assets/oracles/oracle6.mp3';
+import oracle7 from '../assets/oracles/oracle7.mp3';
+import ready from '../assets/oracles/ready.mp3';
 import { Player } from '../models/Player';
 
-const soundMap: { [key: string]: string } = {
-    m: './assets/oracles/oracle1.mp3',
-    l1: './assets/oracles/oracle2.mp3',
-    r1: './assets/oracles/oracle3.mp3',
-    l2: './assets/oracles/oracle4.mp3',
-    r2: './assets/oracles/oracle5.mp3',
-    l3: './assets/oracles/oracle6.mp3',
-    r3: './assets/oracles/oracle7.mp3',
-    break: './assets/oracles/break.mp3',
-    darkness: './assets/ambient/darkness.mp3',
-    ready: './assets/oracles/ready.mp3',
+const soundMap: { [key: string]: any } = {
+    m: oracle1,
+    l1: oracle2,
+    r1: oracle3,
+    l2: oracle4,
+    r2: oracle5,
+    l3: oracle6,
+    r3: oracle7,
+    break: oracleBreak,
+    darkness,
+    ready,
 };
 
 export const qs = <T = HTMLElement>(query: string) => document.querySelector<any>(query)! as unknown as T;
-export const qsa = <T = HTMLElement>(query: string) => document.querySelectorAll<any>(query)! as unknown as T[];
+export const qsa = <T = HTMLElement>(query: string) => {
+    const res = document.querySelectorAll<any>(query);
+    return [...res] as T[];
+};
 
 export const showPlayerNames = (players: Player[]): void => {
-    const container = document.querySelector('#player-list')!;
+    const container = qs('#player-list');
     const fragment = document.createDocumentFragment();
 
     players.forEach((player) => {
@@ -33,6 +46,7 @@ export const showPlayerNames = (players: Player[]): void => {
 export const playSound = (name: string): Promise<void> => {
     return new Promise((resolve) => {
         const elem = document.createElement('audio');
+        elem.preload = 'auto';
         elem.src = soundMap[name];
         document.body.appendChild(elem);
         elem.currentTime = 0;
@@ -54,7 +68,6 @@ export const appendDetails = (playerName: string, action: string) => {
     }
 
     elem.appendChild(text);
-    elem.scrollTop = elem.scrollHeight;
 };
 
 export const resetDetails = () => {
@@ -66,9 +79,33 @@ export const appendChat = (playerName: string, action: string) => {
     const text = document.createElement('div');
     text.innerHTML = `<span class="player-chat__name">${playerName}:</span> ${action}`;
     elem.appendChild(text);
-    elem.scrollTop = elem.scrollHeight;
 };
 
 export const resetChat = () => {
     qs('.player-chat').innerHTML = '';
+};
+
+export const showResults = (status: string) => {
+    if (status === 'PLAYER_SHOT_EARLY') {
+        qs('.map__results__message').innerHTML = `
+            <h3>That was too early!</h3>
+            <p>Be patient, keep track of the orders, and try again!</p>
+        `;
+    } else if (status === 'PLAYER_SHOT_LATE') {
+        qs('.map__results__message').innerHTML = `
+            <h3>That was too late!</h3>
+            <p>Be more aware, keep track of the orders, and try again!</p>
+        `;
+    } else {
+        qs('.map__results__message').innerHTML = `
+            <h3>You did it!</h3>
+            <p>You manage to overcome the Templar Oracle simulation!</p>
+        `;
+    }
+
+    qs('.map__results').classList.remove('d-none');
+};
+
+export const hideResults = () => {
+    qs('.map__results').classList.add('d-none');
 };

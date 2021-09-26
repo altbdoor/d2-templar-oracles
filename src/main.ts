@@ -1,10 +1,20 @@
 import { concat, defer, from, fromEvent, NEVER, of, race, throwError, timer } from 'rxjs';
-import { concatMap, delay, map, mapTo, mergeAll, repeat, switchMap, take, tap, toArray } from 'rxjs/operators';
-import { random } from 'underscore';
+import { concatAll, concatMap, delay, last, map, mapTo, repeat, switchMap, take, tap, toArray } from 'rxjs/operators';
 import './main.css';
 import { GameState } from './models/GameState';
-import { appendChat, appendDetails, playSound, qs, qsa, resetChat, resetDetails, showPlayerNames } from './utility/dom';
-import { getMockPlayers, getOracles, getOraclesForMockPlayers } from './utility/rand';
+import {
+    appendChat,
+    appendDetails,
+    hideResults,
+    playSound,
+    qs,
+    qsa,
+    resetChat,
+    resetDetails,
+    showPlayerNames,
+    showResults,
+} from './utility/dom';
+import { getMockPlayers, getOracles, getOraclesForMockPlayers, getRandomIntInclusive } from './utility/rand';
 
 const gameState: GameState = {
     mockPlayers: getMockPlayers(),
@@ -20,29 +30,27 @@ qs('.map__btn__start').onclick = () => {
     gameState.name = playerName.value;
     playerName.disabled = true;
 
-    gameState.selectedOracle = qs<HTMLInputElement>('[name="oracles"]:checked').value;
+    gameState.selectedOracle = qs<HTMLInputElement>('.map__radio > [name="oracles"]:checked').value;
     gameState.mockPlayerOracles = getOraclesForMockPlayers(gameState.selectedOracle);
 
-    [...qsa('.map__radio')].forEach((radio) => {
-        radio.classList.add('d-none');
-    });
-
-    [...qsa('.map__oracle')].forEach((radio) => {
-        radio.classList.remove('d-none');
-        radio.classList.add('map__oracle--vanish');
-    });
-
     qs('.map__btn__start').classList.add('d-none');
-    qs('.map__results').classList.add('d-none');
 
-    const maxIter = 5;
+    qsa('.map__radio').forEach((elem) => {
+        elem.classList.add('d-none');
+    });
+
+    qsa('.map__oracle').forEach((elem) => {
+        elem.classList.remove('d-none');
+        elem.classList.add('map__oracle--vanish');
+    });
+
+    const maxIteration = 5;
 
     from(playSound('darkness'))
         .pipe(
-            map(() => getOracles(maxIter)),
-            tap((x) => console.log(x)),
-            mergeAll(),
-            concatMap((oracles, roundIndex) => {
+            map(() => getOracles(maxIteration)),
+            concatAll(),
+            concatMap((oracles) => {
                 appendDetails('', 'The Oracles prepare to sing their refrain');
 
                 return concat(
@@ -60,22 +68,21 @@ qs('.map__btn__start').onclick = () => {
                         tap(() => {
                             qsa('.map__oracle').forEach((elem) => elem.classList.add('map__oracle--vanish'));
                         }),
-                        delay(1000),
-                        repeat(2)
-                    ),
-                    from(oracles).pipe(
+                        delay(1400),
+                        repeat(2),
+                        last(),
                         tap(() => {
                             qs('.map__btn__shoot').classList.remove('d-none');
                             oracles
                                 .map((oracle) => qs(`.map__oracle--${oracle}`))
                                 .forEach((elem) => elem.classList.remove('map__oracle--vanish'));
-                        }),
-                        concatMap((oracle, index) => {
-                            if (index === 0) {
-                                playSound('ready');
-                                appendDetails('', 'The Templar summons the Oracles');
-                            }
 
+                            playSound('ready');
+                            appendDetails('', 'The Templar summons the Oracles');
+                        })
+                    ),
+                    from(oracles).pipe(
+                        concatMap((oracle, index) => {
                             const isSelectedOracle = oracle === gameState.selectedOracle;
                             const isPlayerInvolved = oracles.includes(gameState.selectedOracle);
                             const isPlayerPassed = oracles.indexOf(gameState.selectedOracle) < oracles.indexOf(oracle);
@@ -85,7 +92,7 @@ qs('.map__btn__start').onclick = () => {
                                     return timer(6000).pipe(switchMap(() => throwError('PLAYER_SHOT_LATE')));
                                 }
 
-                                return timer(random(10, 40) * 100).pipe(
+                                return timer(getRandomIntInclusive(1000, 4000)).pipe(
                                     tap(() => {
                                         playSound('break');
                                         const mockPlayer =
@@ -127,61 +134,43 @@ qs('.map__btn__start').onclick = () => {
                     )
                 ).pipe(
                     toArray(),
-                    delay(1000),
+                    delay(1400),
                     tap(() => {
                         qs('.map__btn__shoot').classList.add('d-none');
                         appendDetails('', 'The Oracles recognize their refrain');
                     }),
-                    delay(roundIndex === maxIter - 1 ? 0 : 7000)
+                    switchMap((data) => {
+                        const isLastRound = data[0].length === maxIteration + 2;
+                        return timer(isLastRound ? 0 : 6000).pipe(mapTo(data));
+                    })
                 );
-            })
+            }),
+            last()
         )
         .subscribe(
-            (data) => {
-                console.log('you did it', data);
-                if (data[0].length !== maxIter + 3 - 1) {
-                    return;
-                }
-
-                qs('.map__results__message').innerHTML = `
-                    <h3>You did it!</h3>
-                    <p>You manage to overcome the Templar Oracle simulation!</p>
-                `;
-                qs('.map__results').classList.remove('d-none');
+            () => {
+                showResults('SUCCESS');
             },
-            (err) => {
-                if (err === 'PLAYER_SHOT_EARLY') {
-                    qs('.map__results__message').innerHTML = `
-                        <h3>That was too early!</h3>
-                        <p>Be patient, keep track of the orders, and try again!</p>
-                    `;
-                } else if (err === 'PLAYER_SHOT_LATE') {
-                    qs('.map__results__message').innerHTML = `
-                        <h3>That was too late!</h3>
-                        <p>Be more aware, keep track of the orders, and try again!</p>
-                    `;
-                }
-
+            (err: string) => {
+                showResults(err);
                 qs('.map__btn__shoot').classList.add('d-none');
-                qs('.map__results').classList.remove('d-none');
             }
         );
 };
 
 qs('.map__results__retry').onclick = () => {
-    qs('.map__results').classList.add('d-none');
+    qs<HTMLInputElement>('.player-list__name').disabled = false;
     qs('.map__btn__start').classList.remove('d-none');
 
-    [...qsa('.map__radio')].forEach((radio) => {
-        radio.classList.remove('d-none');
+    qsa('.map__radio').forEach((elem) => {
+        elem.classList.remove('d-none');
     });
 
-    [...qsa('.map__oracle')].forEach((radio) => {
-        radio.classList.add('d-none');
+    qsa('.map__oracle').forEach((elem) => {
+        elem.classList.add('d-none');
     });
 
-    qs<HTMLInputElement>('.player-list__name').disabled = false;
-
+    hideResults();
     resetDetails();
     resetChat();
 };

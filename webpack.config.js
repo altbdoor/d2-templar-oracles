@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // @ts-check
 module.exports = /** @type { import('webpack').Configuration } */ {
@@ -28,7 +28,7 @@ module.exports = /** @type { import('webpack').Configuration } */ {
                 use: ['html-loader'],
             },
             {
-                test: /\.(png|svg|jpg|gif)$/,
+                test: /\.(png|svg|jpg|gif|mp3)$/,
                 use: [
                     {
                         loader: 'file-loader',
@@ -58,14 +58,14 @@ module.exports = /** @type { import('webpack').Configuration } */ {
         new MiniCssExtractPlugin({
             filename: '[name]-[contenthash].css',
         }),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: './assets/**/*.mp3',
-                    context: 'src',
-                },
-            ],
-        }),
+        // new CopyWebpackPlugin({
+        //     patterns: [
+        //         {
+        //             from: './assets/**/*.mp3',
+        //             context: 'src',
+        //         },
+        //     ],
+        // }),
     ],
     devtool: 'inline-source-map',
     devServer: {
