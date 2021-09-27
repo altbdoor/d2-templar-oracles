@@ -8,8 +8,8 @@ const PurgecssPlugin = require('purgecss-webpack-plugin');
 // @ts-check
 const config = /** @type { import('webpack').Configuration } */ {
     entry: {
-        main: ['./src/main.ts', './src/main.css'],
-        about: ['./src/main.css'],
+        main: './src/main.ts',
+        styles: './src/main.css',
     },
     module: {
         rules: [
@@ -59,13 +59,13 @@ const config = /** @type { import('webpack').Configuration } */ {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             favicon: './src/assets/favicon.png',
-            chunks: ['main'],
+            chunks: ['main', 'styles'],
         }),
         new HtmlWebpackPlugin({
             filename: 'about.html',
             template: './src/about.html',
             favicon: './src/assets/favicon.png',
-            chunks: ['about'],
+            chunks: ['styles'],
         }),
         new MiniCssExtractPlugin({
             filename: '[name]-[contenthash].css',
