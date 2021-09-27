@@ -6,8 +6,11 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const PurgecssPlugin = require('purgecss-webpack-plugin');
 
 // @ts-check
-module.exports = /** @type { import('webpack').Configuration } */ {
-    entry: './src/main.ts',
+const config = /** @type { import('webpack').Configuration } */ {
+    entry: {
+        main: ['./src/main.ts', './src/main.css'],
+        about: ['./src/main.css'],
+    },
     module: {
         rules: [
             {
@@ -56,17 +59,16 @@ module.exports = /** @type { import('webpack').Configuration } */ {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             favicon: './src/assets/favicon.png',
+            chunks: ['main'],
         }),
         new HtmlWebpackPlugin({
             filename: 'about.html',
             template: './src/about.html',
             favicon: './src/assets/favicon.png',
+            chunks: ['about'],
         }),
         new MiniCssExtractPlugin({
             filename: '[name]-[contenthash].css',
-        }),
-        new PurgecssPlugin({
-            paths: glob.sync('./src/**/*', { nodir: true }),
         }),
     ],
     devtool: 'inline-source-map',
@@ -76,3 +78,16 @@ module.exports = /** @type { import('webpack').Configuration } */ {
         port: 8000,
     },
 };
+
+// https://stackoverflow.com/a/54482904
+const isProduction = process.argv[process.argv.indexOf('--mode') + 1] === 'production';
+if (isProduction) {
+    config.plugins.push(
+        new PurgecssPlugin({
+            paths: glob.sync('./src/**/*', { nodir: true }),
+            keyframes: true,
+        })
+    );
+}
+
+module.exports = config;

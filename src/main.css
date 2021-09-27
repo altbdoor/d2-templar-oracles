@@ -24,13 +24,17 @@
     height: auto;
 }
 
+.map__radio {
+    cursor: pointer;
+    border-radius: 50%;
+}
+
 .map__radio__text {
     display: block;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 5px 0 #000;
     width: 48px;
     height: 48px;
-    cursor: pointer;
     border-radius: 50%;
     position: relative;
 }
@@ -50,6 +54,7 @@
     display: block;
     white-space: nowrap;
     font-weight: 400;
+    box-shadow: 0 0 5px 0 #000;
 }
 
 .map__list {
